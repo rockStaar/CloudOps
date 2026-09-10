@@ -9,13 +9,16 @@ import {
   createIncidentUpdate,
 } from "../controllers/incidentController.js";
 
+import { authenticateToken } from "../middleware/authMiddleware.js";
+
 const router = express.Router();
 
 router.get("/", getIncidents);
 router.get("/:id", getIncidentById);
-router.post("/", createIncident);
-router.put("/:id", updateIncident);
-router.delete("/:id", deleteIncident);
-router.post("/:id/updates", createIncidentUpdate);
+
+router.post("/", authenticateToken, createIncident);
+router.put("/:id", authenticateToken, updateIncident);
+router.delete("/:id", authenticateToken, deleteIncident);
+router.post("/:id/updates", authenticateToken, createIncidentUpdate);
 
 export default router;

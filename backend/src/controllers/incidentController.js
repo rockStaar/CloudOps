@@ -77,12 +77,19 @@ export const createIncident = async (req, res) => {
       description,
       severity,
       serviceId,
-      createdById,
     } = req.body;
 
-    if (!title || !serviceId || !createdById) {
+    const createdById = req.user.userId;
+
+    if (!title || !serviceId) {
       return res.status(400).json({
-        message: "Title, service ID, and creator ID are required",
+        message: "Title and service ID are required",
+      });
+    }
+
+    if (!createdById) {
+      return res.status(401).json({
+        message: "Authenticated user not found",
       });
     }
 
