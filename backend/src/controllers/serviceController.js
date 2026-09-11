@@ -155,3 +155,130 @@ export const deleteService = async (req, res) => {
     });
   }
 };
+
+export const getServiceUptime = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (Number.isNaN(id)) {
+      return res.status(400).json({
+        message: "Invalid service ID",
+      });
+    }
+
+    const service = await prisma.service.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!service) {
+      return res.status(404).json({
+        message: "Service not found",
+      });
+    }
+
+    const since = new Date(
+      Date.now() - 24 * 60 * 60 * 1000
+    );
+
+    const checks = await prisma.serviceCheck.findMany({
+      where: {
+        serviceId: id,
+        checkedAt: {
+          gte: since,
+        },
+      },
+      select: {
+        status: true,
+        checkedAt: true,
+      },
+      orderBy: {
+        checkedAt: "asc",
+      },
+    });
+
+    if (checks.length === 0) {
+      return res.status(200).json({
+        serviceId: id,
+        uptime: null,
+        totalChecks: 0,
+        successfulChecks: 0,
+        failedChecks: 0,
+        period: "24h",
+      });
+    }
+
+    const successfulChecks = checks.filter(
+      (check) => check.status === "OPERATIONAL"
+    ).length;
+
+    const failedChecks = checks.length - successfulChecks;
+
+    const uptime =
+      (successfulChecks / checks.length) * 100;
+
+    res.status(200).json({
+      serviceId: id,
+      uptime: Number(uptime.toFixed(2)),
+      totalChecks: checks.length,
+      successfulChecks,
+      failedChecks,
+      period: "24h",
+    });
+  } catch (error) {
+    console.error("Failed to calculate service uptime:", error);
+
+    res.status(500).json({
+      message: "Failed to calculate service uptime",
+    });
+  }
+};
+
+export const getServiceChecks = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (Number.isNaN(id)) {
+      return res.status(400).json({
+        message: "Invalid service ID",
+      });
+    }
+
+    const service = await prisma.service.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!service) {
+      return res.status(404).json({
+        message: "Service not found",
+      });
+    }
+
+    const checks = await prisma.serviceCheck.findMany({
+      where: {
+        serviceId: id,
+      },
+      orderBy: {
+        checkedAt: "desc",
+      },
+      take: 20,
+      select: {
+        id: true,
+        status: true,
+        responseTime: true,
+        checkedAt: true,
+      },
+    });
+
+    res.status(200).json(checks);
+  } catch (error) {
+    console.error("Failed to fetch service checks:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch service checks",
+    });
+  }
+};

@@ -1,25 +1,28 @@
-function IncidentList() {
+function IncidentList({ incidents = [] }) {
   return (
     <div className="panel">
       <h2>Active Incidents</h2>
 
-      <div className="incident">
-        <span>🔴</span>
+      {incidents.length === 0 ? (
+        <p>No active incidents. All systems are operating normally.</p>
+      ) : (
+        incidents.map((incident) => (
+          <div className="incident" key={incident.id}>
+            <span>
+              {incident.severity === 'HIGH' ? '🔴' : '🟡'}
+            </span>
 
-        <div>
-          <strong>API latency increased</strong>
-          <p>Started 14 minutes ago</p>
-        </div>
-      </div>
+            <div>
+              <strong>{incident.title}</strong>
 
-      <div className="incident">
-        <span>🟡</span>
-
-        <div>
-          <strong>Database connection issues</strong>
-          <p>Started 42 minutes ago</p>
-        </div>
-      </div>
+              <p>
+                {incident.service?.name || 'Unknown service'} ·{' '}
+                {incident.status}
+              </p>
+            </div>
+          </div>
+        ))
+      )}
     </div>
   )
 }

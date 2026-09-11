@@ -32,6 +32,14 @@ export const getIncidents = async () => {
   return apiRequest('/incidents')
 }
 
+export const getServices = async () => {
+  return apiRequest('/services')
+}
+
+export const getServiceUptime = async (id) => {
+  return apiRequest(`/services/${id}/uptime`)
+}
+
 export const updateIncident = async (id, data, token) => {
   return apiRequest(`/incidents/${id}`, {
     method: 'PUT',
@@ -40,4 +48,8 @@ export const updateIncident = async (id, data, token) => {
     },
     body: JSON.stringify(data),
   })
+}
+
+export const getServiceChecks = async (id) => {
+  return apiRequest(`/services/${id}/checks`)
 }

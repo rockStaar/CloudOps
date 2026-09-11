@@ -20,15 +20,18 @@ model User {
 }
 
 model Service {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  url         String
-  status      String   @default("UNKNOWN")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           Int       @id @default(autoincrement())
+  name         String
+  description  String?
+  url          String
+  status       String    @default("UNKNOWN")
+  responseTime Int?
+  lastChecked  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   incidents Incident[]
+  checks    ServiceCheck[]
 }
 
 model Incident {
@@ -55,4 +58,16 @@ model IncidentUpdate {
   createdAt  DateTime @default(now())
 
   incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+}
+
+model ServiceCheck {
+  id           Int      @id @default(autoincrement())
+  serviceId    Int
+  status       String
+  responseTime Int?
+  checkedAt    DateTime @default(now())
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId, checkedAt])
 }
